@@ -14,24 +14,39 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Find Gradle Wrapper
+      run: |
+        echo "Mencari file gradlew..."
+
+        GRADLEW=$(find . -type f -name gradlew -not -path "*/.git/*" -print -quit)
+
+        if [ -z "$GRADLEW" ]; then
+          echo "ERROR: File gradlew tidak ditemukan!"
+          echo "Pastikan proyek memiliki Gradle Wrapper."
+          exit 1
+        fi
+
+        PROJECT_DIR=$(dirname "$GRADLEW")
+
+        echo "Gradle ditemukan: $GRADLEW"
+        echo "Folder proyek: $PROJECT_DIR"
+
+        echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
+
     - name: Build Debug APK
       run: |
-        # Cari dan masuk ke folder proyek secara otomatis
-        if [ -d "DesktopModeProMax" ]; then
-          cd DesktopModeProMax
-        fi
-        
-        # Berikan izin eksekusi dan jalankan gradle
+        cd "$PROJECT_DIR"
         chmod +x gradlew
         ./gradlew assembleDebug
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
-        name: DesktopModeProMax-Debug-APK
-        path: '**/build/outputs/apk/debug/app-debug.apk'
+        name: ModeDesktop-Debug-APK
+        path: '**/build/outputs/apk/debug/*.apk'
+        if-no-files-found: error
