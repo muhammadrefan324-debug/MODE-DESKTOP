@@ -1,0 +1,37 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Build Debug APK
+      run: |
+        # Cari dan masuk ke folder proyek secara otomatis
+        if [ -d "DesktopModeProMax" ]; then
+          cd DesktopModeProMax
+        fi
+        
+        # Berikan izin eksekusi dan jalankan gradle
+        chmod +x gradlew
+        ./gradlew assembleDebug
+
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: DesktopModeProMax-Debug-APK
+        path: '**/build/outputs/apk/debug/app-debug.apk'
