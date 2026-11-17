@@ -1,3 +1,4 @@
+
 name: Build Mode Desktop APK
 
 on:
@@ -25,11 +26,12 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          accept-android-sdk-licenses: true
+          accept-android-sdk-licenses: false
 
       - name: Accept Android SDK Licenses
+        shell: bash
         run: |
-          yes | sdkmanager --licenses || true
+          bash -c 'set +o pipefail; yes | head -n 100 | sdkmanager --licenses'
 
       - name: Install Android SDK Packages
         run: |
