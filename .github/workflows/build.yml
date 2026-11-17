@@ -1,52 +1,41 @@
-name: Build Android APK
+name: Build Mode Desktop APK
 
 on:
   push:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-    - name: Find Gradle Wrapper
-      run: |
-        echo "Mencari file gradlew..."
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-        GRADLEW=$(find . -type f -name gradlew -not -path "*/.git/*" -print -quit)
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
-        if [ -z "$GRADLEW" ]; then
-          echo "ERROR: File gradlew tidak ditemukan!"
-          echo "Pastikan proyek memiliki Gradle Wrapper."
-          exit 1
-        fi
+      - name: Build Debug APK
+        run: gradle --no-daemon assembleDebug
 
-        PROJECT_DIR=$(dirname "$GRADLEW")
-
-        echo "Gradle ditemukan: $GRADLEW"
-        echo "Folder proyek: $PROJECT_DIR"
-
-        echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
-
-    - name: Build Debug APK
-      run: |
-        cd "$PROJECT_DIR"
-        chmod +x gradlew
-        ./gradlew assembleDebug
-
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: ModeDesktop-Debug-APK
-        path: '**/build/outputs/apk/debug/*.apk'
-        if-no-files-found: error
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mode-Desktop-Debug-APK
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
